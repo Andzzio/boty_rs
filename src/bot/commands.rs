@@ -1,11 +1,15 @@
 use poise::{Framework, FrameworkOptions, command};
 use serenity::model::user::User;
 
-pub struct Data {}
+use crate::llm::llm_provider::LLMProvider;
+
+pub struct Data {
+    pub llm: Box<dyn LLMProvider>,
+}
 pub type Error = anyhow::Error;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
 
-pub fn build_framework() -> Framework<Data, Error> {
+pub fn build_framework(llm: Box<dyn LLMProvider>) -> Framework<Data, Error> {
     poise::Framework::builder()
         .options(FrameworkOptions {
             commands: vec![hola(), hablar()],
@@ -14,7 +18,7 @@ pub fn build_framework() -> Framework<Data, Error> {
         .setup(|ctx, _ready, framework| {
             Box::pin(async move {
                 poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data {})
+                Ok(Data { llm })
             })
         })
         .build()
@@ -31,6 +35,19 @@ pub async fn hola(
     Ok(())
 }
 #[command(slash_command)]
-pub async fn hablar(ctx: Context<'_>) -> anyhow::Result<()> {
+pub async fn hablar(
+    ctx: Context<'_>,
+    #[description = "Escribe el mensaje que quieras preguntarle"] prompt: String,
+) -> anyhow::Result<()> {
+    ctx.defer().await?;
+    let llm_provider = ctx.data().llm.as_ref();
+    let response = llm_provider.generate(&prompt).await?;
+    ctx.say(format!(
+        "**{}**: {}\n\n{}",
+        ctx.author().name,
+        prompt,
+        response
+    ))
+    .await?;
     Ok(())
 }
