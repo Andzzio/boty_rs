@@ -1,4 +1,3 @@
-use poise::FrameworkOptions;
 use serenity::{client::ClientBuilder, prelude::*};
 use std::fs;
 
