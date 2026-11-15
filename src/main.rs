@@ -1,9 +1,9 @@
-use serenity::prelude::*;
+use poise::FrameworkOptions;
+use serenity::{client::ClientBuilder, prelude::*};
 use std::fs;
 
-use anyhow::Ok;
 use boty_rs::{
-    bot::handler::Handler,
+    bot::{commands::build_framework, handler::Handler},
     cli::root::Root,
     config::toml_config::{TomlConfig, load_config},
 };
@@ -17,7 +17,8 @@ async fn main() -> anyhow::Result<()> {
     let token = config.keys.token;
     println!("Token: {token:?}");
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
-    let mut client = Client::builder(token, intents)
+    let mut client = ClientBuilder::new(token, intents)
+        .framework(build_framework())
         .event_handler(Handler)
         .await
         .expect("Err creating client");
