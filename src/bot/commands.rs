@@ -41,7 +41,14 @@ pub async fn hablar(
 ) -> anyhow::Result<()> {
     ctx.defer().await?;
     let llm_provider = ctx.data().llm.as_ref();
-    let response = llm_provider.generate(&prompt).await?;
+    let response: String = match llm_provider.generate(&prompt).await {
+        Ok(text) => text,
+        Err(err) => {
+            eprintln!("{:#}", err);
+            ctx.say("Ocurrió un error bro programame bien.").await?;
+            return Ok(());
+        }
+    };
     ctx.say(format!(
         "**{}**: {}\n\n{}",
         ctx.author().name,
