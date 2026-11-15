@@ -13,10 +13,12 @@ async fn main() -> anyhow::Result<()> {
     let root = Root::parse();
     let content = fs::read_to_string(&root.config_path)?;
     let config: TomlConfig = load_config(&content)?;
-    let token = config.keys.token;
-    println!("Token: {token:?}");
+    let dc_token = config.keys.discord_token;
+    let llm_token = config.keys.llm_token;
+    println!("Discord Token: {dc_token:?}");
+    println!("LLM Token: {llm_token:?}");
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
-    let mut client = ClientBuilder::new(token, intents)
+    let mut client = ClientBuilder::new(dc_token, intents)
         .framework(build_framework())
         .event_handler(Handler)
         .await

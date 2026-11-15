@@ -8,7 +8,7 @@ pub type Context<'a> = poise::Context<'a, Data, Error>;
 pub fn build_framework() -> Framework<Data, Error> {
     poise::Framework::builder()
         .options(FrameworkOptions {
-            commands: vec![hola()],
+            commands: vec![hola(), hablar()],
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
@@ -28,5 +28,9 @@ pub async fn hola(
     let u = user.as_ref().unwrap_or_else(|| ctx.author());
     let response = format!("Hola {}", u.name);
     ctx.say(response).await?;
+    Ok(())
+}
+#[command(slash_command)]
+pub async fn hablar(ctx: Context<'_>) -> anyhow::Result<()> {
     Ok(())
 }
