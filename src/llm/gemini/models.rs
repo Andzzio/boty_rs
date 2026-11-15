@@ -6,6 +6,13 @@ use serde::{Deserialize, Serialize};
 pub struct GeminiRequest {
     pub model: String,
     pub input: String,
+    pub system_instruction: String,
+    pub generation_config: GenerationConfig,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct GenerationConfig {
+    pub max_output_tokens: i64,
 }
 
 // Response

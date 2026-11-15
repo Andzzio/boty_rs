@@ -2,8 +2,9 @@ use reqwest::Client;
 use serenity::async_trait;
 
 use crate::llm::{
-    gemini::models::{GeminiRequest, GeminiResponse},
+    gemini::models::{GeminiRequest, GeminiResponse, GenerationConfig},
     llm_provider::LLMProvider,
+    system_prompt::build_system_prompt,
 };
 
 pub struct GeminiClient {
@@ -21,6 +22,10 @@ impl LLMProvider for GeminiClient {
         let gemini_request = GeminiRequest {
             model: String::from("gemini-3.5-flash-lite"),
             input: prompt.to_string(),
+            system_instruction: build_system_prompt(),
+            generation_config: GenerationConfig {
+                max_output_tokens: 400,
+            },
         };
         let res = self
             .client
