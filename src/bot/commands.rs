@@ -1,7 +1,7 @@
 use poise::{Framework, FrameworkOptions, command};
 use serenity::model::user::User;
 
-use crate::llm::llm_provider::LLMProvider;
+use crate::{bot::event_handler::event_handler, llm::llm_provider::LLMProvider};
 
 pub struct Data {
     pub llm: Box<dyn LLMProvider>,
@@ -13,6 +13,7 @@ pub fn build_framework(llm: Box<dyn LLMProvider>) -> Framework<Data, Error> {
     poise::Framework::builder()
         .options(FrameworkOptions {
             commands: vec![hola(), hablar()],
+            event_handler: |framework, event| Box::pin(event_handler(framework, event)),
             ..Default::default()
         })
         .setup(|ctx, _ready, framework| {
@@ -41,7 +42,12 @@ pub async fn hablar(
 ) -> anyhow::Result<()> {
     ctx.defer().await?;
     let llm_provider = ctx.data().llm.as_ref();
-    let response: String = match llm_provider.generate(&prompt).await {
+    let full_prompt = format!(
+        "Name of the user: {}\nUser message: {}",
+        ctx.author().name,
+        prompt
+    );
+    let response: String = match llm_provider.generate(&full_prompt).await {
         Ok(text) => text,
         Err(err) => {
             eprintln!("{:#}", err);

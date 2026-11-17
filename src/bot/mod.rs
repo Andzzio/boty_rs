@@ -1,2 +1,3 @@
 pub mod commands;
-pub mod handler;
+pub mod event_handler;
+pub mod events;

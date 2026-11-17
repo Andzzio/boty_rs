@@ -2,7 +2,7 @@ use serenity::{client::ClientBuilder, prelude::*};
 use std::fs;
 
 use boty_rs::{
-    bot::{commands::build_framework, handler::Handler},
+    bot::commands::build_framework,
     cli::root::Root,
     config::toml_config::{TomlConfig, load_config},
     llm::gemini::gemini_client::GeminiClient,
@@ -24,7 +24,6 @@ async fn main() -> anyhow::Result<()> {
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
     let mut client = ClientBuilder::new(dc_token, intents)
         .framework(build_framework(Box::new(gemini_client)))
-        .event_handler(Handler)
         .await
         .expect("Err creating client");
     if let Err(why) = client.start().await {
