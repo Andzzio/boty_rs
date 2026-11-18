@@ -1,29 +1,7 @@
-use poise::{Framework, FrameworkOptions, command};
+use poise::command;
 use serenity::model::user::User;
 
-use crate::{bot::event_handler::event_handler, llm::llm_provider::LLMProvider};
-
-pub struct Data {
-    pub llm: Box<dyn LLMProvider>,
-}
-pub type Error = anyhow::Error;
-pub type Context<'a> = poise::Context<'a, Data, Error>;
-
-pub fn build_framework(llm: Box<dyn LLMProvider>) -> Framework<Data, Error> {
-    poise::Framework::builder()
-        .options(FrameworkOptions {
-            commands: vec![hola(), hablar()],
-            event_handler: |framework, event| Box::pin(event_handler(framework, event)),
-            ..Default::default()
-        })
-        .setup(|ctx, _ready, framework| {
-            Box::pin(async move {
-                poise::builtins::register_globally(ctx, &framework.options().commands).await?;
-                Ok(Data { llm })
-            })
-        })
-        .build()
-}
+use crate::bot::framework::Context;
 
 #[command(slash_command)]
 pub async fn hola(
