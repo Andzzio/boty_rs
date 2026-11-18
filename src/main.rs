@@ -2,9 +2,10 @@ use serenity::{client::ClientBuilder, prelude::*};
 use std::fs;
 
 use boty_rs::{
-    bot::{commands::build_framework, handler::Handler},
+    bot::commands::build_framework,
     cli::root::Root,
     config::toml_config::{TomlConfig, load_config},
+    llm::gemini::gemini_client::GeminiClient,
 };
 use clap::Parser;
 
@@ -13,12 +14,16 @@ async fn main() -> anyhow::Result<()> {
     let root = Root::parse();
     let content = fs::read_to_string(&root.config_path)?;
     let config: TomlConfig = load_config(&content)?;
-    let token = config.keys.token;
-    println!("Token: {token:?}");
+    let dc_token = config.keys.discord_token;
+    let llm_token = config.keys.llm_token;
+    let tavily_token = config.keys.tavily_token;
+    println!("Discord Token: {dc_token:?}");
+    println!("LLM Token: {llm_token:?}");
+    let client = reqwest::Client::new();
+    let gemini_client = GeminiClient::new(llm_token, tavily_token, client);
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;
-    let mut client = ClientBuilder::new(token, intents)
-        .framework(build_framework())
-        .event_handler(Handler)
+    let mut client = ClientBuilder::new(dc_token, intents)
+        .framework(build_framework(Box::new(gemini_client)))
         .await
         .expect("Err creating client");
     if let Err(why) = client.start().await {
