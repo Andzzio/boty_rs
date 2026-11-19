@@ -29,8 +29,7 @@ impl ServerClient {
         let prompt = format!(
             "Instrucción interna: Eres el sistema de memoria. NO respondas como en un chat.
             Actualiza el <resumen_previo> si es que no está vacío, fusionándolo con los <mensajes_antiguos>
-            en un solo párrafo
-            corto y conciso (máximo 4 líneas), conservando nombres de usuarios y hechos clave.
+            en unos párrafos intentando no perder información, solo puedes crear máximo 2 párrafos de 8 líneas cada uno (no es obligatorio que sea así) conservando nombres de usuarios y hechos clave.
             Devuelve ÚNICAMENTE el texto del resumen.\n\n
             <resumen_previo>\n{}\n</resumen_previo>\n\n
             <mensajes_antiguos>\n{extracted}</mensajes_antiguos>",
