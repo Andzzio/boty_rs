@@ -1,0 +1,12 @@
+# Copy this file to Config.toml and fill in your own keys.
+# Config.toml is gitignored, never commit real tokens.
+
+[keys]
+# Discord Developer Portal -> Your App -> Bot -> Token
+discord_token = "YOUR_DISCORD_BOT_TOKEN"
+
+# Google AI Studio -> Get API key
+llm_token = "YOUR_GEMINI_API_KEY"
+
+# https://app.tavily.com -> API key (used for web search)
+tavily_token = "YOUR_TAVILY_API_KEY"
