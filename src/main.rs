@@ -5,7 +5,7 @@ use boty_rs::{
     bot::framework::build_framework,
     cli::root::Root,
     config::toml_config::{TomlConfig, load_config},
-    data::server_client::ServerClient,
+    data::{history::load_history, server_client::ServerClient},
     llm::gemini::gemini_client::GeminiClient,
 };
 use clap::Parser;
@@ -18,7 +18,7 @@ async fn main() -> anyhow::Result<()> {
     let dc_token = config.keys.discord_token;
     let llm_token = config.keys.llm_token;
     let tavily_token = config.keys.tavily_token;
-    let server_clients: RwLock<HashMap<GuildId, ServerClient>> = RwLock::default();
+    let server_clients: RwLock<HashMap<GuildId, ServerClient>> = RwLock::new(load_history());
     let client = reqwest::Client::new();
     let gemini_client = GeminiClient::new(llm_token, tavily_token, client);
     let intents = GatewayIntents::GUILD_MESSAGES | GatewayIntents::MESSAGE_CONTENT;

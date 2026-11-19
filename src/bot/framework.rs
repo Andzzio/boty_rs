@@ -47,29 +47,59 @@ pub async fn record_message(
     content: String,
     author_name: String,
 ) {
-    if let Some(guild_id) = guild_id {
-        let mut clients = framework.user_data.server_clients.write().await;
-        let server = clients.entry(guild_id).or_insert(ServerClient {
-            messages: Vec::new(),
-        });
-        server.messages.push(ChatMessage {
-            author: author_name,
-            content,
-        });
-        print!("\x1B[2J\x1B[1;1H");
-        println!("{server}");
+    let Some(guild_id) = guild_id else {
+        return;
+    };
+    let mut clients = framework.user_data.server_clients.write().await;
+    let server = clients.entry(guild_id).or_insert(ServerClient {
+        messages: Vec::new(),
+        summary: String::new(),
+    });
+    server.messages.push(ChatMessage {
+        author: author_name,
+        content,
+    });
+    print!("\x1B[2J\x1B[1;1H");
+    println!("{server}");
+    let compression_prompt = server.prepare_to_compress();
+    if let Err(err) = server.save(guild_id) {
+        eprintln!("Error saving history: {err}");
     }
+    drop(clients);
+    let Some(prompt) = compression_prompt else {
+        return;
+    };
+    let llm_provider = framework.user_data.llm.as_ref();
+    let new_summary: String = match llm_provider.generate(&prompt).await {
+        Ok(text) => text,
+        Err(err) => {
+            eprintln!("{:#}", err);
+            String::new()
+        }
+    };
+    let mut clients = framework.user_data.server_clients.write().await;
+    let server = clients.entry(guild_id).or_insert(ServerClient {
+        messages: Vec::new(),
+        summary: String::new(),
+    });
+    server.summary = new_summary;
+    if let Err(err) = server.save(guild_id) {
+        eprintln!("Error saving history: {err}");
+    }
+    print!("\x1B[2J\x1B[1;1H");
+    println!("{server}");
 }
 pub async fn get_message_history(
     framework: poise::FrameworkContext<'_, Data, Error>,
     guild_id: Option<GuildId>,
 ) -> String {
-    if let Some(guild_id) = guild_id {
-        let mut clients = framework.user_data.server_clients.write().await;
-        let server = clients.entry(guild_id).or_insert(ServerClient {
-            messages: Vec::new(),
-        });
-        return format!("{server}");
-    }
-    String::new()
+    let Some(guild_id) = guild_id else {
+        return String::new();
+    };
+    let mut clients = framework.user_data.server_clients.write().await;
+    let server = clients.entry(guild_id).or_insert(ServerClient {
+        messages: Vec::new(),
+        summary: String::new(),
+    });
+    format!("{server}")
 }
